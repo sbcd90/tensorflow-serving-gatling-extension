@@ -19,8 +19,11 @@ class BasicSimulation extends Simulation {
 
   val models = List("model1")
 
+  val inputParam = "images"
+  val outputParam = "scores"
+
   val tfServingClientProtocol =
-    new TensorflowServingClientProtocol(channel, blockingStub, models)
+    new TensorflowServingClientProtocol(channel, blockingStub, models, inputParam, outputParam)
 
   val scn = scenario("Tensorflow Serving Client call").exec(TensorflowServingClientBuilder())
 

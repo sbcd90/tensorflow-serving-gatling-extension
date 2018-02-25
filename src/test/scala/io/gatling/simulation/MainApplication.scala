@@ -17,8 +17,11 @@ object MainApplication extends App {
 
   val models = List("model1")
 
+  val inputParam = "images"
+  val outputParam = "scores"
+
   val tfServingClientProtocol =
-    new TensorflowServingClientProtocol(channel, blockingStub, models)
+    new TensorflowServingClientProtocol(channel, blockingStub, models, inputParam, outputParam)
 
   tfServingClientProtocol.call()
   tfServingClientProtocol.shutdown()

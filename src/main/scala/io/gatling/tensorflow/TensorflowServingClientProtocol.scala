@@ -8,15 +8,15 @@ import io.grpc.ManagedChannel
 import org.tensorflow.framework.{DataType, TensorProto, TensorShapeProto}
 import tensorflow.serving.{Model, Predict, PredictionServiceGrpc}
 
-import scala.util.Random
-
 class TensorflowServingClientProtocol(channel: ManagedChannel,
                                       blockingStub: PredictionServiceGrpc.PredictionServiceBlockingStub,
-                                      models: List[String])
+                                      models: List[String],
+                                      inputParam: String,
+                                      outputParam: String)
   extends Protocol {
 
   def call(): Unit = {
-    predict(models(Random.nextInt(models.length)))
+    models.foreach(predict(_))
   }
 
   def shutdown(): Unit = {
@@ -27,10 +27,12 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
     val images = TensorflowMnistDataReader.getImages()
     val labels = TensorflowMnistDataReader.getLabels()
 
-    for (i <- 0 until 10) {
+    for (i <- images.indices) {
       val imageTensor = createImageTensor(images(i))
       if (imageTensor != null) {
-        requestService(imageTensor, labels(i), modelId)
+        if (!requestService(imageTensor, labels(i), modelId)) {
+          throw new RuntimeException("Prediction call failed")
+        }
       }
     }
   }
@@ -47,8 +49,8 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
     val imageTensorBuilder = TensorProto.newBuilder()
     imageTensorBuilder.setDtype(DataType.DT_FLOAT).setTensorShape(imageFeatureShape)
 
-    for (i <- 0 until image.length) {
-      for (j <- 0 until image.length) {
+    for (i <- image.indices) {
+      for (j <- image.indices) {
         imageTensorBuilder.addFloatVal(image(i)(j))
       }
     }
@@ -56,7 +58,7 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
     imageTensorBuilder.build()
   }
 
-  private def requestService(imagesTensorProto: TensorProto, label: Int, modelId: String): Unit = {
+  private def requestService(imagesTensorProto: TensorProto, label: Int, modelId: String): Boolean = {
     val version = Int64Value.newBuilder().setValue(1).build()
 
     val modelSpec = Model.ModelSpec.newBuilder()
@@ -67,14 +69,15 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
 
     val request = Predict.PredictRequest.newBuilder()
       .setModelSpec(modelSpec)
-      .putInputs("images", imagesTensorProto)
+      .putInputs(inputParam, imagesTensorProto)
       .build()
 
     val response = blockingStub.withDeadlineAfter(10, TimeUnit.SECONDS).predict(request)
-    val scores = response.getOutputsMap().get("scores")
+    val scores = response.getOutputsMap.get(outputParam)
 
-    if (scores.getFloatValList().size() > 0) {
-      println("Prediction request successful")
+    if (scores.getFloatValList.size() > 0) {
+      return true
     }
+    false
   }
 }
