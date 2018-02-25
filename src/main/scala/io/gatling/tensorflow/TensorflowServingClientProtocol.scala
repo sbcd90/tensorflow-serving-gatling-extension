@@ -16,10 +16,10 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
   extends Protocol {
 
   def call(): Unit = {
-    predict(models(Random.nextInt(models.length - 1)))
+    predict(models(Random.nextInt(models.length)))
   }
 
-  private def shutdown(): Unit = {
+  def shutdown(): Unit = {
     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
   }
 
@@ -36,30 +36,24 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
   }
 
   private def createImageTensor(image: Array[Array[Int]]): TensorProto = {
-    try {
-      val featuresDim1 = TensorShapeProto.Dim.newBuilder()
-          .setSize(1).build()
-      val featuresDim2 = TensorShapeProto.Dim.newBuilder()
-          .setSize(image.length * image.length).build()
+    val featuresDim1 = TensorShapeProto.Dim.newBuilder()
+        .setSize(1).build()
+    val featuresDim2 = TensorShapeProto.Dim.newBuilder()
+        .setSize(image.length * image.length).build()
 
-      val imageFeatureShape = TensorShapeProto.newBuilder()
-          .addDim(featuresDim1).addDim(featuresDim2).build()
+    val imageFeatureShape = TensorShapeProto.newBuilder()
+        .addDim(featuresDim1).addDim(featuresDim2).build()
 
-      val imageTensorBuilder = TensorProto.newBuilder()
-      imageTensorBuilder.setDtype(DataType.DT_FLOAT).setTensorShape(imageFeatureShape)
+    val imageTensorBuilder = TensorProto.newBuilder()
+    imageTensorBuilder.setDtype(DataType.DT_FLOAT).setTensorShape(imageFeatureShape)
 
-      for (i <- 0 until image.length) {
-        for (j <- 0 until image.length) {
-          imageTensorBuilder.addFloatVal(image(i)(j))
-        }
+    for (i <- 0 until image.length) {
+      for (j <- 0 until image.length) {
+        imageTensorBuilder.addFloatVal(image(i)(j))
       }
-
-      imageTensorBuilder.build()
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        null
     }
+
+    imageTensorBuilder.build()
   }
 
   private def requestService(imagesTensorProto: TensorProto, label: Int, modelId: String): Unit = {
@@ -80,7 +74,7 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
     val scores = response.getOutputsMap().get("scores")
 
     if (scores.getFloatValList().size() > 0) {
-      System.out.println("Prediction request successful")
+      println("Prediction request successful")
     }
   }
 }

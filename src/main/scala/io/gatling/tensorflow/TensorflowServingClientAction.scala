@@ -19,12 +19,12 @@ class TensorflowServingClientAction(tfServingClientProtocol: TensorflowServingCl
       tfServingClientProtocol.call()
       val end = TimeHelper.nowMillis
 
-      statsEngine.logResponse(session, "test",
+      statsEngine.logResponse(session, "Tensorflow Serving stress test",
         ResponseTimings(start, end), OK, Some("Success"), None)
     } catch {
       case e: Exception =>
-        statsEngine.logResponse(session, "test",
-          ResponseTimings(start, start), KO, Some(e.getMessage()), None)
+        statsEngine.logResponse(session, "Tensorflow Serving stress test",
+          ResponseTimings(start, start), KO, Some(e.getMessage), None)
     }
     nextAction ! session
   }

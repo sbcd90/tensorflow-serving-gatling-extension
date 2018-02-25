@@ -16,7 +16,7 @@ object TensorflowMnistDataReader {
     assertMagicNumber(LABEL_FILE_MAGIC_NUMBER, bb.getInt())
 
     val numLabels = bb.getInt()
-    val labels = Array[Int](numLabels)
+    val labels = Array.ofDim[Int](numLabels)
 
     for (i <- 0 until numLabels) {
       labels(i) = bb.get() & 0xFF
@@ -49,7 +49,7 @@ object TensorflowMnistDataReader {
   }
 
   private def readRow(numCols: Int, bb: ByteBuffer): Array[Int] = {
-    val row = Array[Int](numCols)
+    val row = Array.ofDim[Int](numCols)
     for (col <- 0 until numCols) {
       row(col) = bb.get() & 0xFF
     }
