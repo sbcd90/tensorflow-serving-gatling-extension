@@ -19,7 +19,7 @@ mvn clean install -Ppackage-only
 
 ### Prerequisites
 
-- Install `tensorflow-serving` following [link](https://wwww.tensorflow.org/serving/setup)
+- Install `tensorflow-serving` following [link](https://www.tensorflow.org/serving/setup)
 
 ### Steps
 
