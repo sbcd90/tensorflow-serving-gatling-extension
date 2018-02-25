@@ -1,10 +1,12 @@
 package io.gatling.simulation
 
-import io.gatling.tensorflow.TensorflowServingClientProtocol
+import io.gatling.core.Predef.Simulation
+import io.gatling.core.Predef._
+import io.gatling.tensorflow.{TensorflowServingClientBuilder, TensorflowServingClientProtocol}
 import io.grpc.netty.NettyChannelBuilder
 import tensorflow.serving.PredictionServiceGrpc
 
-object MainApplication extends App {
+class MultiModelSimulation extends Simulation {
 
   val host = "127.0.0.1"
   val port = 9000
@@ -15,7 +17,7 @@ object MainApplication extends App {
 
   val blockingStub = PredictionServiceGrpc.newBlockingStub(channel)
 
-  val models = List("model1")
+  val models = List(("model1", 1), ("model2", 1))
 
   val inputParam = "images"
   val outputParam = "scores"
@@ -23,6 +25,7 @@ object MainApplication extends App {
   val tfServingClientProtocol =
     new TensorflowServingClientProtocol(channel, blockingStub, models, inputParam, outputParam)
 
-  tfServingClientProtocol.call()
-  tfServingClientProtocol.shutdown()
+  val scn = scenario("Tensorflow Serving Client call").exec(TensorflowServingClientBuilder())
+
+  setUp(scn.inject(atOnceUsers(10))).protocols(tfServingClientProtocol)
 }

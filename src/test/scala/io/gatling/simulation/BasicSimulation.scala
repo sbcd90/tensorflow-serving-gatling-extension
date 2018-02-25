@@ -17,7 +17,7 @@ class BasicSimulation extends Simulation {
 
   val blockingStub = PredictionServiceGrpc.newBlockingStub(channel)
 
-  val models = List("model1")
+  val models = List(("model1", 1))
 
   val inputParam = "images"
   val outputParam = "scores"
@@ -27,5 +27,5 @@ class BasicSimulation extends Simulation {
 
   val scn = scenario("Tensorflow Serving Client call").exec(TensorflowServingClientBuilder())
 
-  setUp(scn.inject(atOnceUsers(1))).protocols(tfServingClientProtocol)
+  setUp(scn.inject(atOnceUsers(10))).protocols(tfServingClientProtocol)
 }

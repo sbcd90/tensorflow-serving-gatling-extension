@@ -10,7 +10,7 @@ import tensorflow.serving.{Model, Predict, PredictionServiceGrpc}
 
 class TensorflowServingClientProtocol(channel: ManagedChannel,
                                       blockingStub: PredictionServiceGrpc.PredictionServiceBlockingStub,
-                                      models: List[String],
+                                      models: List[(String, Int)],
                                       inputParam: String,
                                       outputParam: String)
   extends Protocol {
@@ -23,14 +23,14 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
   }
 
-  private def predict(modelId: String): Unit = {
+  private def predict(model: (String, Int)): Unit = {
     val images = TensorflowMnistDataReader.getImages()
     val labels = TensorflowMnistDataReader.getLabels()
 
     for (i <- images.indices) {
       val imageTensor = createImageTensor(images(i))
       if (imageTensor != null) {
-        if (!requestService(imageTensor, labels(i), modelId)) {
+        if (!requestService(imageTensor, labels(i), model)) {
           throw new RuntimeException("Prediction call failed")
         }
       }
@@ -58,11 +58,11 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
     imageTensorBuilder.build()
   }
 
-  private def requestService(imagesTensorProto: TensorProto, label: Int, modelId: String): Boolean = {
-    val version = Int64Value.newBuilder().setValue(1).build()
+  private def requestService(imagesTensorProto: TensorProto, label: Int, model: (String, Int)): Boolean = {
+    val version = Int64Value.newBuilder().setValue(model._2).build()
 
     val modelSpec = Model.ModelSpec.newBuilder()
-      .setName(modelId)
+      .setName(model._1)
       .setVersion(version)
       .setSignatureName("predict_images")
       .build()
