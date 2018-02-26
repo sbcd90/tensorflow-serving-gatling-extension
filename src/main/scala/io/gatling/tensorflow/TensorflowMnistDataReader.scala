@@ -10,7 +10,7 @@ object TensorflowMnistDataReader {
   val LABEL_FILE_PATH = "mnist_test_data/t10k-labels-idx1-ubyte/data"
   val IMAGE_FILE_PATH = "mnist_test_data/t10k-images-idx3-ubyte/data"
 
-  def getLabels(): Array[Int] = {
+  def getLabels(labelPath: String): Array[Int] = {
     val bb = loadFileToByteBuffer(LABEL_FILE_PATH)
 
     assertMagicNumber(LABEL_FILE_MAGIC_NUMBER, bb.getInt())
@@ -24,8 +24,8 @@ object TensorflowMnistDataReader {
     labels
   }
 
-  def getImages(): List[Array[Array[Int]]] = {
-    val bb = loadFileToByteBuffer(IMAGE_FILE_PATH)
+  def getImages(imagePath: String): List[Array[Array[Int]]] = {
+    val bb = loadFileToByteBuffer(imagePath)
 
     assertMagicNumber(IMAGE_FILE_MAGIC_NUMBER, bb.getInt())
 

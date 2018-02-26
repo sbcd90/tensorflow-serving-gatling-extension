@@ -12,7 +12,9 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
                                       blockingStub: PredictionServiceGrpc.PredictionServiceBlockingStub,
                                       models: List[(String, Int)],
                                       inputParam: String,
-                                      outputParam: String)
+                                      outputParam: String,
+                                      imagePath: String = TensorflowMnistDataReader.IMAGE_FILE_PATH,
+                                      labelPath: String = TensorflowMnistDataReader.LABEL_FILE_PATH)
   extends Protocol {
 
   def call(): Unit = {
@@ -24,8 +26,8 @@ class TensorflowServingClientProtocol(channel: ManagedChannel,
   }
 
   private def predict(model: (String, Int)): Unit = {
-    val images = TensorflowMnistDataReader.getImages()
-    val labels = TensorflowMnistDataReader.getLabels()
+    val images = TensorflowMnistDataReader.getImages(imagePath)
+    val labels = TensorflowMnistDataReader.getLabels(labelPath)
 
     for (i <- images.indices) {
       val imageTensor = createImageTensor(images(i))

@@ -27,7 +27,7 @@ mvn clean install -Ppackage-only
 
 ```
 cd src/test/resources
-tensorflow_model_server --port=9000 --model-config-file=models.conf
+tensorflow_model_server --port=9000 --model_config_file=models.conf
 ```
 
 - Run a simple load test using sample data.
@@ -47,6 +47,10 @@ mvn gatling:execute -Dgatling.simulationClass=io.gatling.simulation.BasicSimulat
 - `inputParam` : The input Parameter to run the model.
 
 - `outputParam` : The output Parameter which gives the results.
+
+- `imagePath` : The path to the images used for prediction.
+
+- `labelPath` : The path to the labels used for prediction.
 
 ## Examples
 
